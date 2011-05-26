@@ -1,7 +1,7 @@
 function initializeGame(){
 
 var shapes = new Object();
-shapes.blinker = [[0,-1],[0,0],[0,1]];
+shapes.blinker = [[0,0],[1,0],[2,0]];
 shapes.glider = [[-1,1],[0,0],[1,0],[-1,-1],[0,-1]];
 shapes.toad = [[0,0],[1,0],[2,0],[-1,-1],[0,-1],[1,-1]];
 shapes.beacon =[[0,0],[1,0],[0,1],[1,1],[2,2],[3,2],[2,3],[3,3]];
@@ -20,6 +20,7 @@ shapes.diehard = [[6,-1],[0,0],[1,0],[1,1],[5,1],[6,1],[7,1]];
 shapes.acorn = [[0,0],[2,1],[-1,2],[0,2],[3,2],[4,2],[5,2]];
 shapes.lwss = [[0,0],[3,0],[4,1],[0,2],[4,2],[1,3],[2,3],[3,3],[4,3]];
 
+$('#prefabs img').mousedown(function(e) { e.preventDefault(); });
 w= parseInt($("#gridwidth")[0].value);
 h= parseInt($("#gridheight")[0].value);
 g = NewGrid(w,h);
