@@ -103,10 +103,13 @@ td.dead {
     float:left;;
     height:75px;
     width:75px;
-    background-color:#fff;
+    background-color:#fafafa;
     margin-left:5px;  
     position:relative;
     padding:0px;
+    background-image:url(imgs/drag-cross.png);
+    background-repeat:no-repeat;
+    background-position:95% 5%;
 }
 
 .prefab img {
