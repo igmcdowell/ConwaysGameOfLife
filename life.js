@@ -300,7 +300,7 @@ function Grid(width, height) {
     	$("#tablearea").append(this.html);
     }
     
-    this.setHandlers = function(shapes) {
+    this.setHandlers2 = function(shapes) {
         var g = this;
         $("#lifegrid td").mousedown(function(){
     		ToggleSpot(this, g);
@@ -313,6 +313,34 @@ function Grid(width, height) {
     				var selectedShape = $("#prefabs > .selected")[0].id;
     				var pattern = shapes[selectedShape];
     				RenderShape(this, pattern, g);
+				}
+    	});
+    }
+    
+    this.setHandlers = function(shapes) {
+        var g = this;
+        $("#lifegrid").mousedown(function(e){
+            if(e.target.nodeName == 'TD') {
+    		$("#lifegrid").queue(function() {
+    		    ToggleSpot(e.target, g);
+    		    $("#lifegrid").dequeue();
+    		});
+		}
+    		isHighlightingBoxes = true;
+		});
+    	$("#lifegrid").mouseover(function(e){
+    		if(isHighlightingBoxes) {
+    		    if(e.target.nodeName == 'TD') {
+    			$("#lifegrid").queue(function() {
+        		    ToggleSpot(e.target, g);
+        		    $("#lifegrid").dequeue();
+        		});	
+    		}
+    		}
+    			if(isDraggingShape) {
+    				var selectedShape = $("#prefabs > .selected")[0].id;
+    				var pattern = shapes[selectedShape];
+    			    RenderShape(e.target, pattern, g);
 				}
     	});
     }
