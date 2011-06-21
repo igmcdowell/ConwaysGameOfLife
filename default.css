@@ -19,15 +19,14 @@ td {
     font-size:0em;
     border:1px solid #ddd;
     padding:0px;
+    background-color:#fff;
 }
 
 td.live {
     background-color:#bbb;
 }
 
-td.dead {
-    background-color:#fff;
-}
+
 
 .toggle, #controls, #thegame{
     -moz-user-select: none;

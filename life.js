@@ -121,7 +121,7 @@ function StartStop(grid) {
 }
 
 function ToggleSpot(spot, grid) {
-	$(spot).toggleClass("live dead");
+	$(spot).toggleClass("live");
 	var pos = spot.id.split('r')[1];
 	var pos = pos.split('c');
 	var row = pos[0];
@@ -417,7 +417,7 @@ function RenderShape(targetcell, shape, grid) {
             if(newtarg.hasClass('live')) 
                 oldval = 'live';
             else {
-                oldval = 'dead';
+                oldval = '';
                 ToggleSpot(newtarg[0], grid);
             }
             oldvals.push(oldval);
