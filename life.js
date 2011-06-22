@@ -169,7 +169,7 @@ function Grid(width, height) {
         var rawhtml = '<table id="lifegrid" class="rainbowtable">';
         var state = ['', ' live'];
         for (line in this.rawgrid) {
-            rawhtml = rawhtml + '<tr id="row' + String(line)+'">';
+            rawhtml = rawhtml + '<tr>';
             for (element in this.rawgrid[line]) {
                 rawhtml = rawhtml + '<td id = "r' + String(line) + 'c' + String(element) + '" class="c' + String(element)+ state[this.rawgrid[line][element]] +'">&nbsp;</td>';
             }
