@@ -70,10 +70,10 @@ function RunDay2(grid) {
             }
         }
         centerval = i;
-        row3.push(0);
+        row3.push(0); //add a "dead" cell to the end of the row
         row1 = row2.slice(0); //as we progress down, overwrite each row with the one below it.
         row2 = row3.slice(0);
-        row3 = [0];
+        row3 = [0]; //start the new row with a "dead" cell
     }
     return changes;
 }
@@ -123,7 +123,7 @@ function StartStop(grid) {
 function ToggleSpot(spot, grid) {
 	$(spot).toggleClass("live");
 	var pos = spot.id.split('r')[1];
-	var pos = pos.split('c');
+	pos = pos.split('c');
 	var row = pos[0];
 	var column = pos[1];
     grid.ToggleVal(row,column);
@@ -167,11 +167,11 @@ function Grid(width, height) {
     /* GridToHTML takes the grid of 0s and 1s and converts it to an HTML table. */
     this.GridToHTML = function() {
         var rawhtml = '<table id="lifegrid" class="rainbowtable">';
-        var state = ['dead', 'live'];
+        var state = ['', ' live'];
         for (line in this.rawgrid) {
             rawhtml = rawhtml + '<tr id="row' + String(line)+'">';
             for (element in this.rawgrid[line]) {
-                rawhtml = rawhtml + '<td id = "r' + String(line) + 'c' + String(element) + '" class="' + state[this.rawgrid[line][element]] +' c' + String(element)+'">&nbsp;</td>';
+                rawhtml = rawhtml + '<td id = "r' + String(line) + 'c' + String(element) + '" class="c' + String(element)+ state[this.rawgrid[line][element]] +'">&nbsp;</td>';
             }
             rawhtml = rawhtml + '</tr>';
         }
