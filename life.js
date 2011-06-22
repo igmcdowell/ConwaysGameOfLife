@@ -14,13 +14,8 @@ function CalcLife (aboveleft, abovecenter, aboveright, left, center, right, belo
 }
 
 function CalcLife2(neighbors,center) {
-    if (neighbors == 3) 
+    if (neighbors == 3 || (center && neighbors == 2)) 
         return 1;
-    if (center) {
-        if(neighbors > 3 || neighbors < 2)
-           return 0; 
-        return 1;
-    }
     return 0;
 }
 
@@ -53,19 +48,24 @@ function RunDay2(grid) {
     for(var i =0; i<rlen; i++) {
         row1.push(0);
     }
-    var row2 = row1.slice(0);
-    var row3 = [];
+    var row2 = [0];
+    for(i=1; i<rlen-1; i++) {
+        row2.push(grid[1][i]+ grid[1][i-1] + grid[1][i+1]);
+    }
+    row2.push(0)
+    var row3 = [0];
+    //row 1 is the row above, row 2 is the current row, and row 3 is the row below
     var currneighbors = 0;
     var centerval = 0;
     var center = 0;
     var clen = grid.length;
-    for (i=0; i<clen;i++) { //loop through each row except the first and last.
+    for (i=2; i<clen;i++) { //loop through each row in the grid, skipping the first (blank) and second (already created). 
         for(var j=1; j<rlen-1; j++) { //each eligible cell (not the edges) gets some neighbors calculations
-            center = grid[centerval][j];
-            row3.push(grid[i][j-1] + grid[i][j] + grid[i][j+1]);
+            center = grid[i-1][j];
+            row3.push(grid[i][j-1] + grid[i][j] + grid[i][j+1]); //build the triplets for the row below
             currneighbors = row3[j]+row2[j]+row1[j] - center; 
             var tval = CalcLife2(currneighbors, center);
-            if(tval!=center) {
+            if(i-1 && tval!=center) {
                 changes.push([i-1,j]);
             }
         }
@@ -80,14 +80,12 @@ function RunDay2(grid) {
 
 
 
-function Run(grid, runstatus) {
-    var slidepos = $("#gamespeed")[0].value;
-    var tdelay = 1000 - slidepos/178*900;
+function Run(grid, runstatus, slider, control) {
+    var tdelay = 1000 - slider.value/178*900;
 	window.setTimeout(function(){
-		var status = $('#gamecontrol')[0].value;
-		if(status == runstatus) {
+		if(control.value == runstatus) {
 			Advance(grid);
-			Run(grid, runstatus);
+			Run(grid, runstatus, slider, control);
 		}
 	}, tdelay, true);
 }
@@ -96,7 +94,9 @@ function Start(runName, stopName, grid) {
     $("#thegame table").addClass("running");
     $('#gamecontrol')[0].value = runName;
 	$('#gamecontrol').html(stopName);
-	Run(grid, runName);
+	var slider = $("#gamespeed")[0];
+	var control = $('#gamecontrol')[0];
+	Run(grid, runName, slider, control);
 	$('#advance').attr('disabled', 'disabled');
 }
 
@@ -133,11 +133,8 @@ function ToggleSpot(spot, grid) {
 function Advance(grid) {
 	var changes = RunDay2(grid.rawgrid);
 	for (change in changes) {
-		//var r = changes[change][0];
-		//var c = changes[change][1];
 		var id = '#r'+String(changes[change][0])+'c'+String(changes[change][1]);
-		var spot = $(id)[0];
-		ToggleSpot(spot, grid);
+		ToggleSpot($(id)[0], grid);
 	}
 }
 
@@ -158,10 +155,10 @@ function Grid(width, height) {
     }
     
     this.ToggleVal = function(x,y) {
-        if (this.rawgrid[x][y] == 0) 
-    		this.rawgrid[x][y] = 1;
+        if (this.rawgrid[x][y]) 
+    		this.rawgrid[x][y] = 0;
     	else
-    		this.rawgrid[x][y]= 0;
+    		this.rawgrid[x][y] = 1;
     }
     
     /* GridToHTML takes the grid of 0s and 1s and converts it to an HTML table. */
