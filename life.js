@@ -1,143 +1,79 @@
-
 /* CalcLife takes a grid of nine cells and determines whether the center cell is alive or dead for the next round
 according to the rules of Conway's Game of Life */
-function CalcLife (aboveleft, abovecenter, aboveright, left, center, right, belowleft, belowcenter, belowright) {
-    var neighbors = aboveleft + abovecenter + aboveright + left + right + belowleft + belowcenter + belowright;
-    if (neighbors == 3) 
-        return 1;
-    if (center) {
-        if(neighbors > 3 || neighbors < 2)
-           return 0; 
-        return 1;
-    }
-    return 0;
-}
-
-function CalcLife2(neighbors,center) {
-    if (neighbors == 3 || (center && neighbors == 2)) 
+function CalcLife (center, neighbors) {
+    if (neighbors == 3 || (center && neighbors ==2)) 
         return 1;
     return 0;
 }
 
-/* RunDay executes CalcLife for each cell in the grid.  
+/* CalcChanges executes CalcLife for each cell in the grid.   
 It returns a list of all cells that have changed.
 */
-function RunDay(grid) {
+function CalcChanges(grid) {
     var rlen = grid[0].length;
     var clen = grid.length;
-    var changes = Array();
+    var changes = [];
     for(var i = 1; i<clen-1; i++) {
         for(var j = 1; j<rlen -1; j++) {
-            var tval = CalcLife(grid[i-1][j-1], grid[i-1][j],grid[i-1][j+1], grid[i][j-1], grid[i][j], grid[i][j+1], grid[i+1][j-1], grid[i+1][j], grid[i+1][j+1]);
-            if(tval!=grid[i][j]) {
-                changes.push([i,j]);
+            var tval = CalcLife(grid[i][j], grid[i-1][j-1] + grid[i-1][j] + grid[i-1][j+1] + grid[i][j-1] + grid[i][j+1] + grid[i+1][j-1] + grid[i+1][j] + grid[i+1][j+1]);
+            if(grid[i][j] - tval) { //empirically runs significantly faster to subtract and test non zero than to compare values.
+                changes.push(['#r'+i+'c' +j,i,j]);
             }
         }
     }
     return changes;   
 }
 
-/*RunDay2 takes a grid and returns a list of all changes
-While RunDay1 calculates the neighbors for every point, RunDay2 calculates horizontal triplets, then
-sums them to get the current value. It's probably faster...
-*/
-function RunDay2(grid) {
-    var changes = [];
-    var row1 = []; //create three rows in memory to work from.
-    var rlen = grid[0].length;
-    for(var i =0; i<rlen; i++) {
-        row1.push(0);
-    }
-    var row2 = [0];
-    for(i=1; i<rlen-1; i++) {
-        row2.push(grid[1][i]+ grid[1][i-1] + grid[1][i+1]);
-    }
-    row2.push(0)
-    var row3 = [0];
-    //row 1 is the row above, row 2 is the current row, and row 3 is the row below
-    var currneighbors = 0;
-    var centerval = 0;
-    var center = 0;
-    var clen = grid.length;
-    for (i=2; i<clen;i++) { //loop through each row in the grid, skipping the first (blank) and second (already created). 
-        for(var j=1; j<rlen-1; j++) { //each eligible cell (not the edges) gets some neighbors calculations
-            center = grid[i-1][j];
-            row3.push(grid[i][j-1] + grid[i][j] + grid[i][j+1]); //build the triplets for the row below
-            currneighbors = row3[j]+row2[j]+row1[j] - center; 
-            var tval = CalcLife2(currneighbors, center);
-            if(i-1 && tval!=center) {
-                changes.push([i-1,j]);
-            }
-        }
-        centerval = i;
-        row3.push(0); //add a "dead" cell to the end of the row
-        row1 = row2.slice(0); //as we progress down, overwrite each row with the one below it.
-        row2 = row3.slice(0);
-        row3 = [0]; //start the new row with a "dead" cell
-    }
-    return changes;
+//Advance advances by toggling cells
+function Advance(grid) {
+	var changes = CalcChanges(grid.rawgrid);
+	for (change in changes) {
+		ToggleSpot($(changes[change][0])[0], changes[change][1], changes[change][2], grid);
+	}
 }
 
-
-
-function Run(grid, runstatus, slider, control) {
+function Run(grid, slider, table) {
     var tdelay = 1000 - slider.value/178*900;
 	window.setTimeout(function(){
-		if(control.value == runstatus) {
+		if(table.hasClass("running")) {
 			Advance(grid);
-			Run(grid, runstatus, slider, control);
+			Run(grid, slider, table);
 		}
 	}, tdelay, true);
 }
 
-function Start(runName, stopName, grid) {
+function Start(grid) {
     $("#thegame table").addClass("running");
-    $('#gamecontrol')[0].value = runName;
-	$('#gamecontrol').html(stopName);
-	var slider = $("#gamespeed")[0];
-	var control = $('#gamecontrol')[0];
-	Run(grid, runName, slider, control);
+	$('#gamecontrol').html("Stop Simulation");
 	$('#advance').attr('disabled', 'disabled');
+	Run(grid, $("#gamespeed")[0], $("#thegame table"));
 }
 
-function Stop(runName, stopName) {
+function Stop() {
     $("#thegame table").removeClass("running");
-    $('#gamecontrol')[0].value = stopName;
-	$('#gamecontrol').html(runName);
+	$('#gamecontrol').html("Run Simulation");
 	$('#advance').removeAttr('disabled');
 }
 
 function StartStop(grid) {
-	var status = $('#gamecontrol')[0].value;
-	var runName = "Run Simulation";
-	var stopName = "Stop Simulation";
-	
-	if(status == runName) {
-        Stop(runName, stopName);
+	if($("#thegame table").hasClass("running")) {
+        Stop();
 	}
 	else {
-	    Start(runName, stopName, grid)
+	    Start(grid)
 	}
 }
 
-function ToggleSpot(spot, grid) {
-	$(spot).toggleClass("live");
-	var pos = spot.id.split('r')[1];
+function ToggleCell(el, grid) {
+    var pos = el.id.split('r')[1];
 	pos = pos.split('c');
-	var row = pos[0];
-	var column = pos[1];
+	ToggleSpot(el, pos[0], pos[1], grid);
+}
+
+function ToggleSpot(spot, row, column, grid) {
+	$(spot).toggleClass("live");
     grid.ToggleVal(row,column);
 }
-
-//Advance advances by toggling cells
-function Advance(grid) {
-	var changes = RunDay2(grid.rawgrid);
-	for (change in changes) {
-		var id = '#r'+String(changes[change][0])+'c'+String(changes[change][1]);
-		ToggleSpot($(id)[0], grid);
-	}
-}
-
 
 function Grid(width, height) {
     /* MakeGrid takes a width and height and returns a wXh array initialized to 0*/
@@ -300,29 +236,12 @@ function Grid(width, height) {
     	$("#tablearea").append(this.html);
     }
     
-    this.setHandlers2 = function(shapes) {
-        var g = this;
-        $("#lifegrid td").mousedown(function(){
-    		ToggleSpot(this, g);
-    		isHighlightingBoxes = true;
-		});
-    	$("#lifegrid td").mouseover(function(){
-    			if(isHighlightingBoxes)
-    			    ToggleSpot(this, g);	
-    			if(isDraggingShape) {
-    				var selectedShape = $("#prefabs > .selected")[0].id;
-    				var pattern = shapes[selectedShape];
-    				RenderShape(this, pattern, g);
-				}
-    	});
-    }
-    
     this.setHandlers = function(shapes) {
         var g = this;
         $("#lifegrid").mousedown(function(e){
             if(e.target.nodeName == 'TD') {
     		$("#lifegrid").queue(function() {
-    		    ToggleSpot(e.target, g);
+    		    ToggleCell(e.target, g);
     		    $("#lifegrid").dequeue();
     		});
 		}
@@ -332,7 +251,7 @@ function Grid(width, height) {
     		if(isHighlightingBoxes) {
     		    if(e.target.nodeName == 'TD') {
     			$("#lifegrid").queue(function() {
-        		    ToggleSpot(e.target, g);
+        		    ToggleCell(e.target,g);
         		    $("#lifegrid").dequeue();
         		});	
     		}
@@ -384,13 +303,13 @@ function RemoveShape(targetcell, shape, oldvals, grid) {
         newtarg = $(newtargstring);
         if(newtarg.length > 0) {
             if(!newtarg.hasClass(oldvals[pixel])) 
-                ToggleSpot(newtarg[0], grid);
+                ToggleCell(newtarg[0], grid);
             }
     }
 }
 
 function DragShape(shape, grid) {
-    Stop("Run Simulation", "Stop Simulation");
+    Stop();
     $("body").css('cursor', 'pointer');
 	$("td").mouseover(function(){
 		RenderShape(this, shape, grid);
@@ -415,7 +334,7 @@ function RenderShape(targetcell, shape, grid) {
                 oldval = 'live';
             else {
                 oldval = '';
-                ToggleSpot(newtarg[0], grid);
+                ToggleCell(newtarg[0], grid);
             }
             oldvals.push(oldval);
         }
