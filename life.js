@@ -113,12 +113,8 @@ function Grid(width, height) {
     }    
     
     /* GridToString takes the grid of 0s and 1s and converts it to a compressed string. 
-    String.fromCharCode(n) gives a string
-    s.charCodeAt(0) gives the int value
-    Could start a language at charcode 36 and go up to charcode 126. That gives a base 90 language.
-    
-    Each charcode represents a string of 0s, unless prefixed by a !
-    
+    This uses a base 90 counting system using charcodes 36-126
+    Each charcode represents a string of that many 0s, unless prefixed by a '!'
     Special delimiters: 
      # - new line
      ! - string of 1s
@@ -186,9 +182,7 @@ function Grid(width, height) {
         var celldata = hashes[2];
         var rawgrid = [];
         var row = [];
-        var remainder = this.width;
         var onestring = false;
-        var leftoverones = false;
         var contigs = 0;
         var rowindex = 0;
         var colindex = 0;
@@ -219,13 +213,14 @@ function Grid(width, height) {
     }
     
     this.AddGridToDOM = function(){
-        Stop("Run Simulation", "Stop Simulation");
+        Stop();
         var grid = this;
         var hex = 'FF5E5E';
         var colorfloor = '5E';
         var percent = 100/(this.width);
         $("#columncolors").remove();
         var stylehtml = '<style type="text/css" id="columncolors">';
+        var rule;
         for (column in this.rawgrid[0]) {
             hex = ColorUtils.AdvanceRGBHex(hex, colorfloor, percent);
             rule = ' table.rainbowtable * .c' + String(column) + '.live {background-color:#'+hex+';}\n '; 
@@ -250,17 +245,17 @@ function Grid(width, height) {
     	$("#lifegrid").mouseover(function(e){
     		if(isHighlightingBoxes) {
     		    if(e.target.nodeName == 'TD') {
-    			$("#lifegrid").queue(function() {
-        		    ToggleCell(e.target,g);
-        		    $("#lifegrid").dequeue();
-        		});	
+    			    $("#lifegrid").queue(function() {
+        		        ToggleCell(e.target,g);
+        		        $("#lifegrid").dequeue();
+        		    });	
+    		    }
     		}
-    		}
-    			if(isDraggingShape) {
-    				var selectedShape = $("#prefabs > .selected")[0].id;
-    				var pattern = shapes[selectedShape];
-    			    RenderShape(e.target, pattern, g);
-				}
+    		else if(isDraggingShape) {
+				var selectedShape = $("#prefabs > .selected")[0].id;
+				var pattern = shapes[selectedShape];
+			    RenderShape(e.target, pattern, g);
+			}
     	});
     }
 
